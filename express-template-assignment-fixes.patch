@@ -1,0 +1,81 @@
+diff --git a/Dockerfile b/Dockerfile
+index 4e2ddab..662bbe0 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -17,8 +17,9 @@ COPY package.json ./
+ RUN npm i --only=production
+ COPY . .
+ 
+-# FROM gcr.io/distroless/nodejs:debug
+-FROM gcr.io/distroless/nodejs${NODE_VERSION}:latest AS production
++# Keep the production runtime on the same Alpine/musl family as the build stage
++# so native modules like sqlite3 remain compatible.
++FROM node:${NODE_VERSION}-alpine AS production
+ WORKDIR /app
+ COPY --from=build /app .
+ 
+@@ -29,7 +30,7 @@ EXPOSE 3001
+ ENV API_PORT $ARG_API_PORT
+ ENV NODE_ENV $ARG_NODE_ENV
+ ENV PORT $ARG_API_PORT
+-CMD ["index.js"]
++CMD ["node", "index.js"]
+ 
+ FROM build AS development
+ WORKDIR /app
+diff --git a/base/controller/auth/own.js b/base/controller/auth/own.js
+index 2a5e24f..0f90f3e 100644
+--- a/base/controller/auth/own.js
++++ b/base/controller/auth/own.js
+@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs')
+ const otplib = require('otplib')
+ 
+ const { getSecret, createToken, setTokensToHeader, authFns } = require('@es-labs/node/auth')
++const services = require('@es-labs/node/services')
+ const {
+   COOKIE_HTTPONLY,
+   AUTH_USER_FIELD_LOGIN,
+@@ -17,6 +18,18 @@ const {
+   JWT_ALG
+ } = process.env
+ 
++const findUserById = async (id) => {
++  try {
++    return await authFns.findUser({ id })
++  } catch (e) {
++    const knex = services.get('knex1')
++    if (!knex) throw e
++    const parsedId = Number(id)
++    const lookupId = Number.isNaN(parsedId) ? id : parsedId
++    return knex(process.env.AUTH_USER_STORE_NAME).where({ id: lookupId }).first()
++  }
++}
++
+ const logout = async (req, res) => {
+   let id = null
+   try {
+@@ -76,11 +89,15 @@ const login = async (req, res) => {
+ const otp = async (req, res) => { // need to be authentication, body { id: '', pin: '123456' }
+   try {
+     const { id, pin } = req.body
+-    const user = await authFns.findUser({ id })
++    const user = await findUserById(id)
+     if (user) {
+       const gaKey = user[AUTH_USER_FIELD_GAKEY]
+       if (USE_OTP !== 'TEST' ? otplib.authenticator.check(pin, gaKey) : String(pin) === '111111') { // NOTE: expiry will be determined by authenticator itself
+-        const tokens = await createToken(user)
++        const tokenUser = {
++          ...user,
++          [AUTH_USER_FIELD_ID_FOR_JWT]: String(user[AUTH_USER_FIELD_ID_FOR_JWT])
++        }
++        const tokens = await createToken(tokenUser)
+         setTokensToHeader(res, tokens)
+         return res.status(200).json(tokens)
+       } else {
+@@ -97,4 +114,4 @@ module.exports = {
+   refresh,
+   login,
+   otp,
+-}
+\ No newline at end of file
++}

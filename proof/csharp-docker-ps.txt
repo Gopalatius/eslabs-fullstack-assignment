@@ -1,0 +1,3 @@
+NAMES                               IMAGE                             STATUS          PORTS
+assignment-csharp-rest-api-1        assignment-csharp-rest-api        Up 15 seconds   0.0.0.0:5090->8080/tcp, [::]:5090->8080/tcp
+assignment-csharp-websocket-app-1   assignment-csharp-websocket-app   Up 15 seconds   0.0.0.0:5091->8080/tcp, [::]:5091->8080/tcp

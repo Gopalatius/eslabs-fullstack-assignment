@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebSocket Echo Demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "SF Mono", "Menlo", monospace;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(160deg, #f6f8fb, #e6edf7);
+      color: #14213d;
+    }
+
+    main {
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid #d7e0ee;
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(20, 33, 61, 0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    .row {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    input,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid #b8c5db;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 220px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 999px;
+      background: #1d4ed8;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #475569;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>WebSocket Echo Demo</h1>
+    <p>Use this page during the review to prove the WebSocket endpoint is working from a browser.</p>
+    <div class="row">
+      <label for="message">Message</label>
+      <input id="message" value="hello from browser">
+    </div>
+    <div class="actions">
+      <button id="connect">Connect</button>
+      <button id="send">Send Echo</button>
+      <button id="close" class="secondary">Close</button>
+    </div>
+    <div class="row">
+      <label for="log">Event log</label>
+      <textarea id="log" readonly></textarea>
+    </div>
+  </main>
+  <script>
+    const log = document.getElementById('log');
+    const messageInput = document.getElementById('message');
+    const wsUrl = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`;
+    let socket;
+
+    const append = (line) => {
+      log.value += `${new Date().toISOString()} ${line}\n`;
+      log.scrollTop = log.scrollHeight;
+    };
+
+    document.getElementById('connect').addEventListener('click', () => {
+      if (socket && socket.readyState <= 1) {
+        append('socket already open or connecting');
+        return;
+      }
+
+      socket = new WebSocket(wsUrl);
+      append(`connecting to ${wsUrl}`);
+      socket.addEventListener('open', () => append('socket opened'));
+      socket.addEventListener('close', (event) => append(`socket closed code=${event.code}`));
+      socket.addEventListener('error', () => append('socket error'));
+      socket.addEventListener('message', (event) => append(`message ${event.data}`));
+    });
+
+    document.getElementById('send').addEventListener('click', () => {
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        append('connect first');
+        return;
+      }
+
+      const payload = JSON.stringify({
+        type: 'echo',
+        message: messageInput.value
+      });
+
+      socket.send(payload);
+      append(`sent ${payload}`);
+    });
+
+    document.getElementById('close').addEventListener('click', () => {
+      if (socket) {
+        socket.close();
+      }
+    });
+  </script>
+</body>
+</html>
