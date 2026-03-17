@@ -89,23 +89,25 @@ The Dockerized backend was verified for:
 ### Proof artifacts
 
 - backend healthcheck response:
-  - `submission-artifacts/proof/backend/healthcheck.json`
+  - `proof/backend/healthcheck.json`
 - backend login response:
-  - `submission-artifacts/proof/backend/login.json`
+  - `proof/backend/login.json`
 - backend OTP response:
-  - `submission-artifacts/proof/backend/otp.json`
+  - `proof/backend/otp.json`
 - backend Docker healthcheck response:
-  - `submission-artifacts/proof/backend/docker-healthcheck.json`
+  - `proof/backend/docker-healthcheck.json`
 - backend Docker login response:
-  - `submission-artifacts/proof/backend/docker-login.json`
+  - `proof/backend/docker-login.json`
 - backend Docker OTP response:
-  - `submission-artifacts/proof/backend/docker-otp.json`
+  - `proof/backend/docker-otp.json`
 - frontend sign-in screenshot:
-  - `submission-artifacts/proof/frontend/signin.png`
+  - `proof/frontend/signin.png`
 - frontend OTP screenshot:
-  - `submission-artifacts/proof/frontend/otp.png`
+  - `proof/frontend/otp.png`
 - frontend dashboard screenshot:
-  - `submission-artifacts/proof/frontend/dashboard.png`
+  - `proof/frontend/dashboard.png`
+- frontend dashboard browser screenshot:
+  - `proof/frontend/dashboard-browser.png`
 
 ## C# Deliverables
 
@@ -147,28 +149,28 @@ The Dockerized backend was verified for:
 - each app includes a multi-stage Dockerfile for Linux-oriented portability
 - Docker verification completed on macOS using a local Linux container runtime
 - proof artifacts:
-  - `submission-artifacts/proof/csharp-rest/docker-health.json`
-  - `submission-artifacts/proof/csharp-websocket/docker-health.json`
-  - `submission-artifacts/proof/csharp-websocket/docker-echo.json`
-  - `submission-artifacts/proof/csharp-docker-ps.txt`
+  - `proof/csharp-rest/docker-health.json`
+  - `proof/csharp-websocket/docker-health.json`
+  - `proof/csharp-websocket/docker-echo.json`
+  - `proof/csharp-docker-ps.txt`
 
 ### Proof artifacts
 
 REST API:
 
 - health response:
-  - `submission-artifacts/proof/csharp-rest/health.json`
+  - `proof/csharp-rest/health.json`
 - tasks before create:
-  - `submission-artifacts/proof/csharp-rest/tasks-before.json`
+  - `proof/csharp-rest/tasks-before.json`
 - created task response:
-  - `submission-artifacts/proof/csharp-rest/create-task.json`
+  - `proof/csharp-rest/create-task.json`
 - tasks after create:
-  - `submission-artifacts/proof/csharp-rest/tasks-after.json`
+  - `proof/csharp-rest/tasks-after.json`
 
 WebSocket:
 
 - echo response:
-  - `submission-artifacts/proof/csharp-websocket/echo.json`
+  - `proof/csharp-websocket/echo.json`
 
 ## Automated Validation
 
@@ -177,6 +179,11 @@ Executed successfully:
 - `dotnet test tests/RestApi.Tests/RestApi.Tests.csproj`
 - `dotnet test tests/WebSocketApp.Tests/WebSocketApp.Tests.csproj`
 
-The frontend proof screenshots were captured automatically with Playwright using:
+The frontend proof screenshots were captured in two ways:
 
-- `submission-artifacts/capture-frontend-proof.mjs`
+- with Playwright automation for:
+  - `proof/frontend/signin.png`
+  - `proof/frontend/otp.png`
+  - `proof/frontend/dashboard.png`
+- with a real browser session for:
+  - `proof/frontend/dashboard-browser.png`
